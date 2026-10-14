@@ -1,14 +1,36 @@
-# esigner/sdk
+<p align="center">
+  <a href="https://esigner.no">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/esigner-me/esigner-sdk-php/main/art/esigner-mark.svg">
+      <img src="https://esigner.no/logo.svg" alt="esigner" height="64">
+    </picture>
+  </a>
+</p>
 
-The official PHP client for the [esigner](https://esigner.no) API: send PDFs for signing with BankID,
-MitID and other national eIDs, get the signed PDF back, and verify webhooks. The same shape as the
-Node SDK, [`@esigner/sdk`](https://www.npmjs.com/package/@esigner/sdk).
+<h1 align="center">esigner SDK for PHP</h1>
+
+<p align="center">Send PDFs for signing with BankID, MitID and other national eIDs, get the signed PDF back, and verify webhooks — from PHP and WordPress.</p>
+
+<p align="center">
+  <a href="https://packagist.org/packages/esigner/sdk"><img src="https://img.shields.io/packagist/v/esigner/sdk" alt="Packagist version"></a>
+  <a href="https://packagist.org/packages/esigner/sdk"><img src="https://img.shields.io/packagist/php-v/esigner/sdk" alt="PHP version"></a>
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license">
+</p>
+
+<p align="center">
+  <a href="https://esigner.no/dokumentasjon"><b>API reference</b></a> ·
+  <a href="https://esigner.no">esigner.no</a> ·
+  <a href="https://esigner.dk">esigner.dk</a> ·
+  <a href="https://esigner.se">esigner.se</a> ·
+  <a href="https://esigner.fi">esigner.fi</a> ·
+  <a href="https://esigner.de">esigner.de</a> ·
+  <a href="https://esigner.me">esigner.me</a>
+</p>
 
 - Only `ext-curl` and `ext-json` — drops into WordPress or any framework
 - Safe retries: every POST carries an idempotency key that stays the same across retries
 - Cursor pagination as generators, webhook verification in one call
 
-Full API reference: **https://esigner.no/dokumentasjon**
 
 ## Install
 
@@ -49,7 +71,7 @@ $document = $esigner->documents->upload(['a.pdf', 'b.docx'], ['ownerEmail' => 'p
 $request  = $esigner->signatureRequests->create(['documentId' => $document['id'], 'signers' => [/* … */]]);
 ```
 
-Markets: `no`, `dk`, `se`, `fi`, `de`, `nl`, `uk`. A key belongs to the market it was created in.
+Using another market? `new EsignerClient($key, ['market' => 'se'])` — see the table below.
 
 ## Follow it up
 
@@ -147,6 +169,22 @@ return the original result too, and `['timeout' => 120]` for one slow call.
 
 `Esigner\Client` and its flat methods (`uploadDocument`, `createSignatureRequest`, …) still work and
 are deprecated; `EsignerClient` with its services is the way forward.
+
+## esigner around the world
+
+esigner runs one site per country, each signing with that country's own eID. An API key belongs to
+the site it was created on — pick it with the `market` option.
+
+| | Site | Signers identify with | API reference |
+|---|---|---|---|
+| 🇳🇴 Norway | [esigner.no](https://esigner.no) | BankID | [esigner.no/dokumentasjon](https://esigner.no/dokumentasjon) |
+| 🇩🇰 Denmark | [esigner.dk](https://esigner.dk) | MitID | [esigner.dk/dokumentation](https://esigner.dk/dokumentation) |
+| 🇸🇪 Sweden | [esigner.se](https://esigner.se) | BankID | [esigner.se/dokumentation](https://esigner.se/dokumentation) |
+| 🇫🇮 Finland | [esigner.fi](https://esigner.fi) | Bank credentials (FTN) | [esigner.fi/dokumentaatio](https://esigner.fi/dokumentaatio) |
+| 🇩🇪 Germany | [esigner.de](https://esigner.de) | Personalausweis | [esigner.de/dokumentation](https://esigner.de/dokumentation) |
+
+📱 **On the go:** [esigner.me](https://esigner.me) — the esigner app for iPhone and Android. Scan or
+upload a document, send it for signing and follow it until everyone has signed.
 
 ## License
 
