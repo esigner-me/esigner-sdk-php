@@ -1,0 +1,38 @@
+{
+    "name": "esigner/sdk",
+    "description": "Official PHP client for the esigner e-signing API: BankID, MitID and other eID signature requests, signed PDFs and verified webhooks.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "esigner",
+        "e-signature",
+        "esignature",
+        "bankid",
+        "mitid",
+        "eid",
+        "signing",
+        "pdf",
+        "webhooks",
+        "wordpress"
+    ],
+    "homepage": "https://esigner.no/dokumentasjon",
+    "support": {
+        "docs": "https://esigner.no/dokumentasjon",
+        "source": "https://github.com/esigner-me/esigner-sdk-php",
+        "issues": "https://github.com/esigner-me/esigner-sdk-php/issues",
+        "email": "hei@esigner.no"
+    },
+    "require": {
+        "php": ">=8.1",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Esigner\\": "src/"
+        }
+    },
+    "scripts": {
+        "test": "php tests/run.php"
+    }
+}
