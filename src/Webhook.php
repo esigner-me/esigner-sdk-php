@@ -11,6 +11,16 @@ namespace Esigner;
  */
 final class Webhook
 {
+    /** Every event type the API delivers. */
+    public const EVENT_TYPES = [
+        'document.completed',
+        'document.signing_failed',
+        'document.cancelled',
+        'signer.signed',
+        'signer.declined',
+        'order.captured',
+    ];
+
     /** True when the signature matches and the timestamp is within $toleranceSec. */
     public static function verify(string $payload, ?string $header, string $secret, int $toleranceSec = 300): bool
     {

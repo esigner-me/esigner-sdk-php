@@ -1,11 +1,12 @@
 # esigner/sdk
 
 The official PHP client for the [esigner](https://esigner.no) API: send PDFs for signing with BankID,
-MitID and other national eIDs, get the signed PDF back, and verify webhooks.
+MitID and other national eIDs, get the signed PDF back, and verify webhooks. The same shape as the
+Node SDK, [`@esigner/sdk`](https://www.npmjs.com/package/@esigner/sdk).
 
 - Only `ext-curl` and `ext-json` — drops into WordPress or any framework
 - Safe retries: every POST carries an idempotency key that stays the same across retries
-- Webhook verification in one call
+- Cursor pagination as generators, webhook verification in one call
 
 Full API reference: **https://esigner.no/dokumentasjon**
 
@@ -22,25 +23,59 @@ and no legally binding signature.
 ## Send a document for signing
 
 ```php
-use Esigner\Client;
+use Esigner\EsignerClient;
 
-$esigner = new Client(getenv('ESIGNER_API_KEY'));            // ['market' => 'se'] for esigner.se
+$esigner = new EsignerClient(getenv('ESIGNER_API_KEY'));     // ['market' => 'se'] for esigner.se
 
-$document = $esigner->uploadDocument('/path/to/contract.pdf', 'post@company.no');   // the sender
-
-$request = $esigner->createSignatureRequest([
-    'documentId'      => $document['id'],
-    'signers'         => [['name' => 'Ola Nordmann', 'email' => 'ola@example.no']],
+$request = $esigner->signatureRequests->createWithFiles('/path/to/contract.pdf', [
+    'ownerEmail'      => 'post@company.no',                     // receives the receipt and the signed PDF
+    'signers'         => [
+        ['name' => 'Ola Nordmann', 'email' => 'ola@example.no'],
+        ['name' => 'Kari Nordmann', 'email' => 'kari@example.no'],
+    ],
     'useSubscription' => true,                                   // draw from your plan's quota
     'signingEids'     => ['no_bankid'],                          // optional: Norwegian BankID only
-    'returnUrl'       => 'https://example.com/contracts/123/signed',  // optional
+    'returnUrl'       => 'https://example.com/contracts/123/signed',  // optional: where signers land after
 ]);
 
 echo $request['signers'][0]['sign_url'];
 ```
 
-Then `retrieveSignatureRequest($id)`, `cancelSignatureRequest($id, 'reason')`,
-`downloadSignedDocument($id)` (the PDF's bytes) and `listEvents(['type' => 'document.completed'])`.
+Files can be paths or bytes — `['data' => $pdfBytes, 'filename' => 'contract.pdf']` — and several are
+merged in the order given. Or upload first and create separately:
+
+```php
+$document = $esigner->documents->upload(['a.pdf', 'b.docx'], ['ownerEmail' => 'post@company.no']);
+$request  = $esigner->signatureRequests->create(['documentId' => $document['id'], 'signers' => [/* … */]]);
+```
+
+Markets: `no`, `dk`, `se`, `fi`, `de`, `nl`, `uk`. A key belongs to the market it was created in.
+
+## Follow it up
+
+```php
+$request = $esigner->signatureRequests->retrieve($id);           // status, signers, …
+
+if ($request['status'] === 'completed') {
+    $pdf = $esigner->signatureRequests->downloadSignedDocument($id);   // the PDF's bytes
+    file_put_contents('signed.pdf', $pdf);
+}
+
+$esigner->signatureRequests->cancel($id, ['reason' => 'Wrong version']);   // before anyone signs
+$esigner->signatureRequests->listSignedDocuments($id);                     // several files → positions
+```
+
+## Balance and events
+
+```php
+$esigner->balance->retrieve();                                   // ['balance_ore' => …, 'currency' => …]
+
+foreach ($esigner->balance->allTransactions() as $tx) { /* every page, newest first */ }
+
+foreach ($esigner->events->all(['type' => 'document.completed']) as $event) {
+    // the same events your webhook receives — for backfilling after downtime
+}
+```
 
 ## Webhooks (WordPress example)
 
@@ -65,8 +100,9 @@ add_action('rest_api_init', function () {
             } catch (SignatureVerificationException $e) {
                 return new WP_REST_Response(null, 400);
             }
-            if ($event['type'] === 'document.completed') {
-                // fetch the signed PDF with downloadSignedDocument($event['data']['orderId'])
+            switch ($event['type']) {
+                case 'signer.signed':      /* $event['data']['signersSigned'] of ['signersTotal'] */ break;
+                case 'document.completed': /* downloadSignedDocument($event['data']['orderId']) */ break;
             }
             return new WP_REST_Response(null, 200);
         },
@@ -74,14 +110,43 @@ add_action('rest_api_init', function () {
 });
 ```
 
-Events: `signer.signed`, `signer.declined`, `document.completed`, `document.cancelled`,
-`document.signing_failed`, `order.captured`. Deliveries are retried; dedupe on `$event['id']`.
+`Webhook::EVENT_TYPES` lists them all. Deliveries are retried; dedupe on `$event['id']`.
 
 ## Errors
 
-Any non-2xx answer throws `Esigner\EsignerException` with the API's stable code in `errorCode`
-(plus `status`, `detail` and the full decoded `body`). Network errors, `429` and `5xx` are retried
-twice with backoff.
+Any non-2xx answer throws `Esigner\EsignerException` with the API's stable code:
+
+```php
+use Esigner\EsignerException;
+
+try {
+    $esigner->signatureRequests->create([/* … */]);
+} catch (EsignerException $e) {
+    if ($e->errorCode === 'quota_exceeded') { /* … */ }
+    // also $e->status, $e->detail and the full decoded $e->body
+}
+```
+
+Network errors, `429` and `5xx` are retried twice with backoff.
+
+## Options
+
+```php
+new EsignerClient($key, [
+    'market'      => 'no',     // which esigner site the key belongs to
+    'base_url'    => null,     // or a full API base, e.g. a staging host
+    'max_retries' => 2,
+    'timeout'     => 60,       // seconds per attempt
+]);
+```
+
+Every POST takes a last `$opts` argument: `['idempotency_key' => '…']` to make a retry from your side
+return the original result too, and `['timeout' => 120]` for one slow call.
+
+## Upgrading from 0.1
+
+`Esigner\Client` and its flat methods (`uploadDocument`, `createSignatureRequest`, …) still work and
+are deprecated; `EsignerClient` with its services is the way forward.
 
 ## License
 

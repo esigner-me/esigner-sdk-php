@@ -5,9 +5,7 @@ declare(strict_types=1);
 // Dependency-free checks: `composer test` (or `php tests/run.php`). Webhook verification here;
 // the HTTP client is exercised against a recording mock server by tests/client.mjs.
 
-require __DIR__ . '/../src/EsignerException.php';
-require __DIR__ . '/../src/SignatureVerificationException.php';
-require __DIR__ . '/../src/Webhook.php';
+require __DIR__ . '/bootstrap.php';
 
 use Esigner\SignatureVerificationException;
 use Esigner\Webhook;
@@ -41,6 +39,16 @@ try {
     check('constructEvent throws on a bad signature', false);
 } catch (SignatureVerificationException) {
     check('constructEvent throws on a bad signature', true);
+}
+
+check('lists the event types', in_array('signer.signed', Webhook::EVENT_TYPES, true) && count(Webhook::EVENT_TYPES) === 6);
+
+// The client refuses a non-key before any network call.
+try {
+    new Esigner\EsignerClient('whsec_oops');
+    check('refuses something that is not an API key', false);
+} catch (InvalidArgumentException) {
+    check('refuses something that is not an API key', true);
 }
 
 exit($failed ? 1 : 0);
