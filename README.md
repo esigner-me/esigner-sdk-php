@@ -47,17 +47,22 @@ and no legally binding signature.
 ```php
 use Esigner\EsignerClient;
 
-$esigner = new EsignerClient(getenv('ESIGNER_API_KEY'));     // ['market' => 'se'] for esigner.se
+// ['market' => 'se'] for esigner.se — see the table below
+$esigner = new EsignerClient(getenv('ESIGNER_API_KEY'));
 
 $request = $esigner->signatureRequests->createWithFiles('/path/to/contract.pdf', [
-    'ownerEmail'      => 'post@company.no',                     // receives the receipt and the signed PDF
+    // The sender: receives the receipt and the signed PDF
+    'ownerEmail'      => 'post@company.no',
     'signers'         => [
         ['name' => 'Ola Nordmann', 'email' => 'ola@example.no'],
         ['name' => 'Kari Nordmann', 'email' => 'kari@example.no'],
     ],
-    'useSubscription' => true,                                   // draw from your plan's quota
-    'signingEids'     => ['no_bankid'],                          // optional: Norwegian BankID only
-    'returnUrl'       => 'https://example.com/contracts/123/signed',  // optional: where signers land after
+    // Draw from your plan's quota
+    'useSubscription' => true,
+    // Optional: Norwegian BankID only
+    'signingEids'     => ['no_bankid'],
+    // Optional: where signers land after the eID step
+    'returnUrl'       => 'https://example.com/contracts/123/signed',
 ]);
 
 echo $request['signers'][0]['sign_url'];
@@ -67,8 +72,14 @@ Files can be paths or bytes — `['data' => $pdfBytes, 'filename' => 'contract.p
 merged in the order given. Or upload first and create separately:
 
 ```php
-$document = $esigner->documents->upload(['a.pdf', 'b.docx'], ['ownerEmail' => 'post@company.no']);
-$request  = $esigner->signatureRequests->create(['documentId' => $document['id'], 'signers' => [/* … */]]);
+$document = $esigner->documents->upload(
+    ['a.pdf', 'b.docx'],
+    ['ownerEmail' => 'post@company.no'],
+);
+$request = $esigner->signatureRequests->create([
+    'documentId' => $document['id'],
+    'signers'    => [/* … */],
+]);
 ```
 
 Using another market? `new EsignerClient($key, ['market' => 'se'])` — see the table below.
@@ -76,23 +87,31 @@ Using another market? `new EsignerClient($key, ['market' => 'se'])` — see the 
 ## Follow it up
 
 ```php
-$request = $esigner->signatureRequests->retrieve($id);           // status, signers, …
+// status, signers, …
+$request = $esigner->signatureRequests->retrieve($id);
 
 if ($request['status'] === 'completed') {
-    $pdf = $esigner->signatureRequests->downloadSignedDocument($id);   // the PDF's bytes
+    // The PDF's bytes
+    $pdf = $esigner->signatureRequests->downloadSignedDocument($id);
     file_put_contents('signed.pdf', $pdf);
 }
 
-$esigner->signatureRequests->cancel($id, ['reason' => 'Wrong version']);   // before anyone signs
-$esigner->signatureRequests->listSignedDocuments($id);                     // several files → positions
+// Before anyone has signed
+$esigner->signatureRequests->cancel($id, ['reason' => 'Wrong version']);
+
+// Several files → one entry per position
+$esigner->signatureRequests->listSignedDocuments($id);
 ```
 
 ## Balance and events
 
 ```php
-$esigner->balance->retrieve();                                   // ['balance_ore' => …, 'currency' => …]
+// ['balance_ore' => …, 'currency' => …]
+$esigner->balance->retrieve();
 
-foreach ($esigner->balance->allTransactions() as $tx) { /* every page, newest first */ }
+foreach ($esigner->balance->allTransactions() as $tx) {
+    // every page, newest first
+}
 
 foreach ($esigner->events->all(['type' => 'document.completed']) as $event) {
     // the same events your webhook receives — for backfilling after downtime
@@ -123,8 +142,12 @@ add_action('rest_api_init', function () {
                 return new WP_REST_Response(null, 400);
             }
             switch ($event['type']) {
-                case 'signer.signed':      /* $event['data']['signersSigned'] of ['signersTotal'] */ break;
-                case 'document.completed': /* downloadSignedDocument($event['data']['orderId']) */ break;
+                case 'signer.signed':
+                    // $event['data']['signersSigned'] of ['signersTotal']
+                    break;
+                case 'document.completed':
+                    // downloadSignedDocument($event['data']['orderId'])
+                    break;
             }
             return new WP_REST_Response(null, 200);
         },
