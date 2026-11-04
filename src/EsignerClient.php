@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Esigner;
 
 use Esigner\Service\BalanceService;
+use Esigner\Service\DataProcessingAgreementService;
 use Esigner\Service\DocumentService;
 use Esigner\Service\EventService;
 use Esigner\Service\SignatureRequestService;
@@ -36,6 +37,7 @@ class EsignerClient
     public readonly DocumentService $documents;
     public readonly SignatureRequestService $signatureRequests;
     public readonly BalanceService $balance;
+    public readonly DataProcessingAgreementService $dataProcessingAgreements;
     public readonly EventService $events;
 
     /**
@@ -63,6 +65,7 @@ class EsignerClient
         $this->documents = new DocumentService($http);
         $this->signatureRequests = new SignatureRequestService($http, $this->documents);
         $this->balance = new BalanceService($http);
+        $this->dataProcessingAgreements = new DataProcessingAgreementService($http);
         $this->events = new EventService($http);
     }
 }
