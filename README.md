@@ -99,6 +99,11 @@ if ($request['status'] === 'completed') {
 // Before anyone has signed
 $esigner->signatureRequests->cancel($id, ['reason' => 'Wrong version']);
 
+// More time for the signers: move the deadline later, up to 90 days from now.
+// `expires_at` on the request is the new deadline; the signing links stay the same.
+$esigner->signatureRequests->extendDeadline($id, ['days' => 30]);
+$esigner->signatureRequests->extendDeadline($id, ['expires_at' => new DateTimeImmutable('2026-12-31 17:00', new DateTimeZone('Europe/Oslo'))]);
+
 // Several files → one entry per position
 $esigner->signatureRequests->listSignedDocuments($id);
 ```

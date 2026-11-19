@@ -21,7 +21,7 @@ use Esigner\Service\SignatureRequestService;
  */
 class EsignerClient
 {
-    public const VERSION = '0.3.0';
+    public const VERSION = '0.4.0';
 
     /** The API's own markets. A key belongs to the market it was created in. */
     public const MARKETS = [

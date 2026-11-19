@@ -93,6 +93,23 @@ final class SignatureRequestService
     }
 
     /**
+     * Give the signers more time: move an `in_progress` request's deadline later. Send exactly one
+     * of `days` (from now) or `expires_at` (an ISO 8601 moment, or a DateTimeInterface). Later only,
+     * at most 90 days from now; the signing links stay the same.
+     *
+     * @param array{days?: int, expires_at?: string|\DateTimeInterface} $params
+     * @param array{idempotency_key?: string, timeout?: int} $opts
+     * @return array{signature_request: array<string, mixed>, previous_expires_at: string, unchanged: bool}
+     */
+    public function extendDeadline(string $id, array $params, array $opts = []): array
+    {
+        if (($params['expires_at'] ?? null) instanceof \DateTimeInterface) {
+            $params['expires_at'] = $params['expires_at']->format(\DateTimeInterface::RFC3339);
+        }
+        return $this->http->request('POST', '/signature_requests/' . rawurlencode($id) . '/deadline', json: $params, opts: $opts);
+    }
+
+    /**
      * The signed PDF(s) of a completed request, with their positions.
      *
      * @return array{data: list<array<string, mixed>>, download_expires_at: ?string}

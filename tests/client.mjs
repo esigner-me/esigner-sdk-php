@@ -25,6 +25,7 @@ const server = createServer(async (req, res) => {
     return send(201, { id: `req_${createCalls}` });
   }
   if (u.pathname === "/v1/signature_requests/missing") return send(404, { error: "not_found", hint: "check the id" });
+  if (u.pathname === "/v1/signature_requests/req_1/deadline") return send(200, { unchanged: false, previous_expires_at: "x", signature_request: { id: "req_1" } });
   if (u.pathname === "/v1/signature_requests/req_1/cancel") return send(200, { already_cancelled: false, signature_request: { id: "req_1" } });
   if (u.pathname === "/v1/signature_requests/req_1/signed_documents") return send(200, { data: [{ position: 0 }], download_expires_at: null });
   if (u.pathname === "/v1/signature_requests/req_1/signed_documents/0") return send(200, "%PDF-signed", "application/pdf");
@@ -75,6 +76,9 @@ assert.equal(out.withFiles, "req_4");
 assert.deepEqual(out.error, [404, "not_found", "check the id"]);
 assert.equal(out.cancel, false);
 assert.equal(JSON.parse(seen.find((s) => s.url.endsWith("/cancel")).body).reason, "test");
+assert.equal(out.deadline, false);
+const deadlines = seen.filter((s) => s.url.endsWith("/deadline")).map((s) => JSON.parse(s.body));
+assert.deepEqual(deadlines, [{ days: 30 }, { expires_at: "2026-12-31T16:00:00+00:00" }]);
 assert.equal(out.signedList, 1);
 assert.equal(out.pdf, "%PDF-signed");
 assert.equal(out.balance, 12000);

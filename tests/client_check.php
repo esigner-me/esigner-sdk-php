@@ -26,6 +26,8 @@ try {
     $out['error'] = [$e->status, $e->errorCode, $e->body['hint'] ?? null];
 }
 $out['cancel'] = $es->signatureRequests->cancel('req_1', ['reason' => 'test'])['already_cancelled'];
+$out['deadline'] = $es->signatureRequests->extendDeadline('req_1', ['days' => 30])['unchanged'];
+$es->signatureRequests->extendDeadline('req_1', ['expires_at' => new DateTimeImmutable('2026-12-31T16:00:00+00:00')]);
 $out['signedList'] = count($es->signatureRequests->listSignedDocuments('req_1')['data']);
 $out['pdf'] = $es->signatureRequests->downloadSignedDocument('req_1');
 $out['balance'] = $es->balance->retrieve()['balance_ore'];
