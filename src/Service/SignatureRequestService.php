@@ -69,6 +69,30 @@ final class SignatureRequestService
     }
 
     /**
+     * Pause a request so nobody can sign or download it, without cancelling it.
+     *
+     * @param array{reason?: string} $params
+     * @param array{idempotency_key?: string, timeout?: int} $opts
+     * @return array{signature_request: array<string, mixed>}
+     */
+    public function lock(string $id, array $params = [], array $opts = []): array
+    {
+        return $this->http->request('POST', '/signature_requests/' . rawurlencode($id) . '/lock', json: $params ?: new \stdClass(), opts: $opts);
+    }
+
+    /**
+     * Lift a lock (yours or an administrator's); the same signing links work again.
+     *
+     * @param array{reason?: string} $params
+     * @param array{idempotency_key?: string, timeout?: int} $opts
+     * @return array{signature_request: array<string, mixed>}
+     */
+    public function unlock(string $id, array $params = [], array $opts = []): array
+    {
+        return $this->http->request('POST', '/signature_requests/' . rawurlencode($id) . '/unlock', json: $params ?: new \stdClass(), opts: $opts);
+    }
+
+    /**
      * The signed PDF(s) of a completed request, with their positions.
      *
      * @return array{data: list<array<string, mixed>>, download_expires_at: ?string}
