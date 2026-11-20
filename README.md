@@ -2,12 +2,12 @@
   <a href="https://esigner.no">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://esigner.no/logo-dark.svg">
-      <img src="https://esigner.no/logo.svg" alt="esigner" height="64">
+      <img src="https://esigner.no/logo.svg" alt="Esigner" height="64">
     </picture>
   </a>
 </p>
 
-<h1 align="center">esigner SDK for PHP</h1>
+<h1 align="center">Esigner SDK for PHP</h1>
 
 <p align="center">Send PDFs for signing with BankID, MitID and other national eIDs, get the signed PDF back, and verify webhooks — from PHP and WordPress.</p>
 
@@ -38,7 +38,7 @@
 composer require esigner/sdk
 ```
 
-PHP 8.1 or newer. Create an API key under **Konto → Utvikler** on your esigner site. Keys starting
+PHP 8.1 or newer. Create an API key under **Konto → Utvikler** on your Esigner site. Keys starting
 with `sk_test_` sign against the test environment: the real flow, with test identities, no payment
 and no legally binding signature.
 
@@ -125,7 +125,7 @@ foreach ($esigner->events->all(['type' => 'document.completed']) as $event) {
 
 ## Webhooks (WordPress example)
 
-esigner signs every delivery with `Esigner-Signature: t=<unix>,v1=<hmac>`. Verify against the **raw**
+Esigner signs every delivery with `Esigner-Signature: t=<unix>,v1=<hmac>`. Verify against the **raw**
 body — a re-encoded JSON body will not match.
 
 ```php
@@ -183,7 +183,7 @@ Network errors, `429` and `5xx` are retried twice with backoff.
 
 ```php
 new EsignerClient($key, [
-    'market'      => 'no',     // which esigner site the key belongs to
+    'market'      => 'no',     // which Esigner site the key belongs to
     'base_url'    => null,     // or a full API base, e.g. a staging host
     'max_retries' => 2,
     'timeout'     => 60,       // seconds per attempt
@@ -198,9 +198,9 @@ return the original result too, and `['timeout' => 120]` for one slow call.
 `Esigner\Client` and its flat methods (`uploadDocument`, `createSignatureRequest`, …) still work and
 are deprecated; `EsignerClient` with its services is the way forward.
 
-## esigner around the world
+## Esigner around the world
 
-esigner runs one site per country, each signing with that country's own eID. An API key belongs to
+Esigner runs one site per country, each signing with that country's own eID. An API key belongs to
 the site it was created on — pick it with the `market` option.
 
 | | Site | Signers identify with | API reference |
@@ -211,7 +211,7 @@ the site it was created on — pick it with the `market` option.
 | 🇫🇮 Finland | [esigner.fi](https://esigner.fi) | Bank credentials (FTN) | [esigner.fi/dokumentaatio](https://esigner.fi/dokumentaatio) |
 | 🇩🇪 Germany | [esigner.de](https://esigner.de) | Personalausweis | [esigner.de/dokumentation](https://esigner.de/dokumentation) |
 
-📱 **On the go:** [esigner.me](https://esigner.me) — the esigner app for iPhone and Android. Scan or
+📱 **On the go:** [esigner.me](https://esigner.me) — the Esigner app for iPhone and Android. Scan or
 upload a document, send it for signing and follow it until everyone has signed.
 
 ## License
