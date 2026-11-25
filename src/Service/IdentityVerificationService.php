@@ -18,7 +18,7 @@ final class IdentityVerificationService
     }
 
     /**
-     * @param array{eids?: list<string>, returnUrl?: string, reference?: string} $params
+     * @param array{eids?: list<string>, returnUrl?: string, reference?: string, paymentMethod?: 'auto'|'subscription'|'balance'|'card'|'checkout'} $params
      * @return array<string, mixed> `id`, `status`, `verification_url`, …
      */
     public function create(array $params = []): array
@@ -30,5 +30,11 @@ final class IdentityVerificationService
     public function retrieve(string $id): array
     {
         return $this->http->request('GET', '/identity_verifications/' . rawurlencode($id));
+    }
+
+    /** Close an open verification; an unopened one gets its quota or money back (`payment.refunded`). */
+    public function cancel(string $id): array
+    {
+        return $this->http->request('POST', '/identity_verifications/' . rawurlencode($id) . '/cancel');
     }
 }
