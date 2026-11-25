@@ -18,6 +18,7 @@ final class Webhook
         'document.cancelled',
         'signer.signed',
         'signer.declined',
+        'signer.paid',
         'order.captured',
     ];
 
