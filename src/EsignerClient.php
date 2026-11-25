@@ -6,6 +6,7 @@ namespace Esigner;
 
 use Esigner\Service\BalanceService;
 use Esigner\Service\DataProcessingAgreementService;
+use Esigner\Service\IdentityVerificationService;
 use Esigner\Service\DocumentService;
 use Esigner\Service\EventService;
 use Esigner\Service\SignatureRequestService;
@@ -38,6 +39,7 @@ class EsignerClient
     public readonly SignatureRequestService $signatureRequests;
     public readonly BalanceService $balance;
     public readonly DataProcessingAgreementService $dataProcessingAgreements;
+    public readonly IdentityVerificationService $identityVerifications;
     public readonly EventService $events;
 
     /**
@@ -66,6 +68,7 @@ class EsignerClient
         $this->signatureRequests = new SignatureRequestService($http, $this->documents);
         $this->balance = new BalanceService($http);
         $this->dataProcessingAgreements = new DataProcessingAgreementService($http);
+        $this->identityVerifications = new IdentityVerificationService($http);
         $this->events = new EventService($http);
     }
 }

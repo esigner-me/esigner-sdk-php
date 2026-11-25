@@ -41,7 +41,7 @@ try {
     check('constructEvent throws on a bad signature', true);
 }
 
-check('lists the event types', in_array('signer.signed', Webhook::EVENT_TYPES, true) && in_array('signer.paid', Webhook::EVENT_TYPES, true) && count(Webhook::EVENT_TYPES) === 7);
+check('lists the event types', in_array('signer.signed', Webhook::EVENT_TYPES, true) && in_array('signer.paid', Webhook::EVENT_TYPES, true) && in_array('identity.verified', Webhook::EVENT_TYPES, true) && count(Webhook::EVENT_TYPES) === 9);
 
 // The client refuses a non-key before any network call.
 try {

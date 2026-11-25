@@ -19,6 +19,8 @@ final class Webhook
         'signer.signed',
         'signer.declined',
         'signer.paid',
+        'identity.verified',
+        'identity.failed',
         'order.captured',
     ];
 
