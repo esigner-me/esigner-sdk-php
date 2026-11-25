@@ -108,6 +108,50 @@ $esigner->signatureRequests->extendDeadline($id, ['expires_at' => new DateTimeIm
 $esigner->signatureRequests->listSignedDocuments($id);
 ```
 
+## Let every signer pay their own share
+
+With `splitPayment` the sender pays nothing: the price is divided evenly over the signers and each gets
+their own payment link. Nobody is invited until the last share is paid; a cancelled or expired request
+refunds every paid share.
+
+```php
+$request = $esigner->signatureRequests->createWithFiles('contract.pdf', [
+    'ownerEmail' => 'post@company.no',
+    'signers' => [
+        ['name' => 'Ola Nordmann', 'email' => 'ola@example.no'],
+        ['name' => 'Kari Nordmann', 'email' => 'kari@example.no'],
+    ],
+    'splitPayment' => true,
+]);
+
+// Deliver these yourself — Esigner does not mail them
+foreach ($request['signers'] as $signer) {
+    echo $signer['email'], ' ', $signer['payment']['payment_url'] ?? '', "\n";
+}
+```
+
+Each payment arrives as a `signer.paid` webhook (`sharesPaid` of `sharesTotal`, `allPaid`).
+
+## Verify someone's identity
+
+Identify a person with their national eID (BankID, MitID, …), without a document or a signature:
+
+```php
+$verification = $esigner->identityVerifications->create([
+    'returnUrl' => 'https://example.com/onboarding/done',
+    'reference' => 'customer-123', // yours, echoed back
+]);
+
+// Send the person to $verification['verification_url'], then — or on identity.verified:
+$v = $esigner->identityVerifications->retrieve($verification['id']);
+if ($v['status'] === 'verified') {
+    [$name, $born, $eid] = [$v['result']['name'], $v['result']['birth_date'], $v['result']['eid']];
+}
+```
+
+Paid at creation like a signing (Basic ID quota, prepaid balance, saved card, or the person pays on the
+page). `cancel($id)` closes one nobody has opened and gives back what it drew.
+
 ## Balance and events
 
 ```php
